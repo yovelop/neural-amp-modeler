@@ -1063,7 +1063,7 @@ def _get_configs(
         "train_dataloader": {
             "batch_size": batch_size,
             "shuffle": True,
-            "pin_memory": True,
+            "pin_memory": False,
             "drop_last": True,
             "num_workers": 0,
         },
@@ -1112,11 +1112,11 @@ def _plot(
         tx = len(ds.x) / 48_000
         print(f"Run (t={tx:.2f} sec)")
         t0 = _time()
-        output = model(ds.x).flatten().cpu().numpy()
+        output = model(torch.Tensor(ds.x).to('cuda')).flatten().cpu().numpy()
         t1 = _time()
         print(f"Took {t1 - t0:.2f} sec ({tx / (t1 - t0):.2f}x)")
 
-    esr = _esr(_torch.Tensor(output), ds.y)
+    esr = _esr(torch.Tensor(output), ds.y.cpu())
     # Trying my best to put numbers to it...
     if esr < 0.01:
         esr_comment = "Great!"
@@ -1133,7 +1133,7 @@ def _plot(
 
     _plt.figure(figsize=(16, 5))
     _plt.plot(output[window_start:window_end], label="Prediction")
-    _plt.plot(ds.y[window_start:window_end], linestyle="--", label="Target")
+    _plt.plot(ds.y.flatten().cpu().numpy()[window_start:window_end], linestyle="--", label="Target")
     _plt.title(f"ESR={esr:.4g}")
     _plt.legend()
     if filepath is not None:
@@ -1442,7 +1442,7 @@ def train(
     # * Model is re-instantiated after training anyways.
     # (Hacky) solution: set sample rate in model from dataloader after second
     # instantiation from final checkpoint.
-    model = _LightningModule.init_from_config(model_config)
+    model = _LightningModule.init_from_config(model_config).to("cuda")
     train_dataloader, val_dataloader = _get_dataloaders(
         data_config, learning_config, model
     )
@@ -1481,7 +1481,7 @@ def train(
             trainer.checkpoint_callback.best_model_path,
             **_LightningModule.parse_config(model_config),
         )
-    model.cpu()
+    #model.cpu() 
     model.eval()
     model.net.sample_rate = sample_rate  # Hack, part 2
 
