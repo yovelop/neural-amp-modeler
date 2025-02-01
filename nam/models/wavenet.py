@@ -323,7 +323,7 @@ class _WaveNet(_nn.Module):
         weights = _torch.cat([layer.export_weights() for layer in self._layers])
         if self._head is not None:
             weights = _torch.cat([weights, self._head.export_weights()])
-        weights = _torch.cat([weights.cpu(), _torch.Tensor([self._head_scale])])
+        weights = _torch.cat([weights.cpu(), _torch.Tensor([self._head_scale]).to('cuda')])
         return weights.detach().cpu().numpy()
 
     def import_weights(self, weights: _torch.Tensor):
