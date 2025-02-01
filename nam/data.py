@@ -136,10 +136,10 @@ def wav_to_tensor(
     out = wav_to_np(*args, info=info, **kwargs)
     if info:
         arr, info = out
-        return _torch.Tensor(arr), info
+        return _torch.Tensor(arr).to('cuda'), info
     else:
         arr = out
-        return _torch.Tensor(arr)
+        return _torch.Tensor(arr).to('cuda')
 
 
 def tensor_to_wav(x: _torch.Tensor, *args, **kwargs):
