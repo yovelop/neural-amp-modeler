@@ -232,7 +232,7 @@ class StopError(StartStopError):
 
 
 # In seconds. Can't be 0.5 or else v1.wav is invalid! Oops!
-_DEFAULT_REQUIRE_INPUT_PRE_SILENCE = 0.4
+_DEFAULT_REQUIRE_INPUT_PRE_SILENCE = None #0.4
 
 
 def _sample_to_time(s, rate):
